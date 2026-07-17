@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
-import type { PaymentMethod, Sale } from "../VentasPage";
+import type { Sale } from "@/logic-bussines-layer/domain/models/sale.model";
+import type { PaymentMethod } from "../../compras/ComprasPage";
 import { CreditCard, CalendarIcon, Edit, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { paymentMethodOptions } from "../../../mock/products.mock.data";

@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Package, Calendar, Pencil, Trash2 } from "lucide-react";
-import type { Product } from "../ProductosPage";
+import type { Product } from "@/logic-bussines-layer/domain/models/product.model";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
