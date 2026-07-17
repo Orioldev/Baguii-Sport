@@ -10,7 +10,7 @@ export const useSales = () => {
   const queryClient = useQueryClient();
 
   // 1. Query para leer todas las ventas de Firebase
-  const { data: sales = [], isLoading, error } = useQuery({
+  const { data: sales = [], isLoading, error, refetch } = useQuery({
     queryKey: ["sales"],
     queryFn: () => container.getSales(),
   });
@@ -59,6 +59,7 @@ export const useSales = () => {
     sales,
     isLoading,
     error,
+    refetch,
     createSale: createSaleMutation.mutateAsync,
     isCreating: createSaleMutation.isPending,
 

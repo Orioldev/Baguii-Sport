@@ -1,4 +1,3 @@
-
 import { useMemo } from "react";
 import { useGetProducts } from "../../productos/hooks/useProductMutations";
 import { useSales } from "../../ventas/hooks/useSales";
@@ -108,13 +107,26 @@ const buildYearData = (sales: DatedAmount[], purchases: DatedAmount[]): YearRow[
 };
 
 export const useDashboardStats = () => {
-  const { data: products = [], isLoading: isLoadingProducts } = useGetProducts();
-  const { sales, isLoading: isLoadingSales } = useSales();
-  const { purchases, isLoading: isLoadingPurchases } = usePurchaseActions();
-  const { debts, isLoading: isLoadingDebts } = useDeudaMutations();
+  const { data: products = [], isLoading: isLoadingProducts, error: productsError, refetch: refetchProducts } = useGetProducts();
+  const { sales, isLoading: isLoadingSales, error: salesError, refetch: refetchSales } = useSales();
+  const { purchases, isLoading: isLoadingPurchases, error: purchasesError, retry: retryPurchases } = usePurchaseActions();
+  const { debts, isLoading: isLoadingDebts, error: debtsError, retry: retryDebts } = useDeudaMutations();
   const { rate } = useDollarRate();
 
   const isLoading = isLoadingProducts || isLoadingSales || isLoadingPurchases || isLoadingDebts;
+
+  // Combinamos los 4 orígenes de error en un solo estado simple para la UI.
+  // No distinguimos cuál falló porque, para un mensaje básico, no aporta valor
+  // adicional al usuario y complica innecesariamente el estado.
+  const hasError = Boolean(productsError || salesError || purchasesError || debtsError);
+
+  // Reintenta la carga inicial de las 4 fuentes de datos a la vez
+  const retry = () => {
+    refetchProducts();
+    refetchSales();
+    retryPurchases();
+    retryDebts();
+  };
 
   // Normalizamos ventas/compras a una forma común para reutilizar el bucketing por fecha
   const salesForCharts: DatedAmount[] = useMemo(
@@ -167,5 +179,5 @@ export const useDashboardStats = () => {
     [salesForCharts, purchasesForCharts]
   );
 
-  return { isLoading, totals, weekData, monthData, yearData, rate };
+  return { isLoading, hasError, retry, totals, weekData, monthData, yearData, rate };
 };

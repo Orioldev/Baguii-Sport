@@ -15,10 +15,12 @@ export const usePurchaseActions = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
 
   // 1. Escuchar cambios en tiempo real desde Firestore
   useEffect(() => {
     setIsLoading(true);
+    setError(null);
     try {
       const unsubscribe = subscribePurchasesUseCase((updatedPurchases) => {
         // Mapeamos los datos del dominio a lo que espera la UI si es necesario
@@ -31,7 +33,10 @@ export const usePurchaseActions = () => {
       setError("Error al conectar con el servidor de compras.");
       setIsLoading(false);
     }
-  }, []);
+  }, [retryKey]);
+
+  // Reintenta la conexión inicial (por ejemplo, tras un fallo de red)
+  const retry = () => setRetryKey((k) => k + 1);
 
   // 2. Acción para Crear Compra
   const createPurchase = async (purchase: Omit<Purchase, "id">) => {
@@ -76,6 +81,7 @@ export const usePurchaseActions = () => {
     purchases,
     isLoading,
     error,
+    retry,
     createPurchase,
     updatePurchase,
     deletePurchase,

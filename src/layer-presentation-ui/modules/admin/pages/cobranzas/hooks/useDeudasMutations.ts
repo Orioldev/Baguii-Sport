@@ -18,16 +18,28 @@ const subscribeExecute = subscribeDeudasUseCase(debtRepository);
 export const useDeudaMutations = () => {
   const [debts, setDebts] = useState<Debt[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
 
   // Suscripción en tiempo real: cualquier create/update/delete en Firestore
   // (venga de esta pestaña o de otra) actualiza `debts` automáticamente.
   useEffect(() => {
-    const unsubscribe = subscribeExecute((liveDebts) => {
-      setDebts(liveDebts);
+    setIsLoading(true);
+    setError(null);
+    try {
+      const unsubscribe = subscribeExecute((liveDebts) => {
+        setDebts(liveDebts);
+        setIsLoading(false);
+      });
+      return () => unsubscribe();
+    } catch (err) {
+      setError("Error al conectar con el servidor de deudas.");
       setIsLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
+    }
+  }, [retryKey]);
+
+  // Reintenta la conexión inicial (por ejemplo, tras un fallo de red)
+  const retry = () => setRetryKey((k) => k + 1);
 
   const createMutation = useMutation({
     mutationFn: (debt: Omit<Debt, "id">) => createExecute(debt),
@@ -49,6 +61,8 @@ export const useDeudaMutations = () => {
   return {
     debts,
     isLoading,
+    error,
+    retry,
     createDeuda: createMutation.mutateAsync,
     updateDeuda: updateMutation.mutateAsync,
     deleteDeuda: deleteMutation.mutateAsync,

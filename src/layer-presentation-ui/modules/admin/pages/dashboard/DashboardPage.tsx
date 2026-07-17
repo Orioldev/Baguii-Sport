@@ -12,6 +12,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { AlertTriangle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 import { TransactionsCard } from "./components/TransaccionsCard";
 import { CobranzasCard } from "./components/CobranzasCard";
@@ -37,7 +39,27 @@ function DashboardPage() {
 
   // 🟢 Datos reales y en vivo: ventas, compras y deudas por onSnapshot; productos por
   // useQuery (se refresca al vender o cada 5 min, ver nota en useDashboardStats.ts)
-  const { isLoading, totals, weekData, monthData, yearData, rate } = useDashboardStats();
+  const { isLoading, hasError, retry, totals, weekData, monthData, yearData, rate } = useDashboardStats();
+
+  if (hasError) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 px-4 text-center">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+          <AlertTriangle className="h-6 w-6" />
+        </div>
+        <div className="space-y-1">
+          <p className="font-medium text-foreground">No se pudieron cargar las métricas del negocio</p>
+          <p className="text-sm text-muted-foreground">
+            Revisa tu conexión e inténtalo de nuevo.
+          </p>
+        </div>
+        <Button onClick={retry} className="gap-2 mt-2">
+          <RefreshCw className="h-4 w-4" />
+          Reintentar
+        </Button>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
