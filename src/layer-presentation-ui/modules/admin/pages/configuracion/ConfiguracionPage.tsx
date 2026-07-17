@@ -8,6 +8,7 @@ import { FieldHint } from "./components/FieldHint";
 import { useAuthStore } from "../../../auth/hooks/useAuthStore";
 import { useVerifyPasswordMutation } from "./hooks/useVerifyPasswordMutation";
 import { useChangePasswordMutation } from "./hooks/useChangePasswordMutation";
+import { toast } from "sonner";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -67,7 +68,10 @@ export default function SettingsPage() {
       { email: user.email, currentPassword: currentPwd },
       {
         onSuccess: () => setCurrentChecked(true),
-        onError: () => setCurrentChecked(false),
+        onError: (err: any) => {
+          setCurrentChecked(false);
+          toast.error(err?.message || "Contraseña incorrecta. Inténtalo de nuevo.");
+        },
       }
     );
   };
@@ -85,6 +89,7 @@ export default function SettingsPage() {
           setRepeatPwd("");
           setCurrentPwd("");
           setCurrentChecked(null);
+          toast.success("Contraseña actualizada correctamente.");
           setTimeout(() => setSaved(false), 3000);
         },
         onError: (err: any) => {
@@ -93,6 +98,7 @@ export default function SettingsPage() {
           if (err?.message?.toLowerCase().includes("verificar")) {
             setCurrentChecked(null);
           }
+          toast.error(err?.message || "No se pudo actualizar la contraseña.");
         },
       }
     );
