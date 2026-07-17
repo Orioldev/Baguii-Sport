@@ -19,10 +19,12 @@ const toDateInputValue = (d: Date) => {
 // 🟢 Añadimos currentRate a las props
 export const CreateComprasModal = ({ 
   onCreate, 
-  currentRate 
+  currentRate,
+  isSubmitting = false,
 }: { 
   onCreate: (p: Purchase) => void; 
   currentRate: number; 
+  isSubmitting?: boolean;
 }) => {
   const [name, setName] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("efectivo");
@@ -97,9 +99,9 @@ export const CreateComprasModal = ({
       </div>
 
       <DialogFooter>
-        <Button onClick={handleSubmit} disabled={!isValid} className="w-full sm:w-auto">
+        <Button onClick={handleSubmit} disabled={!isValid || isSubmitting} className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
-          Crear compra
+          {isSubmitting ? "Creando..." : "Crear compra"}
         </Button>
       </DialogFooter>
     </DialogContent>

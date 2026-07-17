@@ -6,10 +6,14 @@ import type { Purchase } from "../ComprasPage";
 
 export const DeleteCompraDialog = ({ 
   purchase, 
-  onConfirm 
+  onConfirm,
+  onCancel,
+  isDeleting = false,
 }: { 
   purchase: Purchase | null; 
   onConfirm: () => void; 
+  onCancel: () => void;
+  isDeleting?: boolean;
 }) => {
   if (!purchase) return null;
 
@@ -27,12 +31,12 @@ export const DeleteCompraDialog = ({
         </DialogDescription>
       </DialogHeader>
       <DialogFooter className="mt-4 gap-2 sm:gap-0">
-        <Button variant="outline" type="button" onClick={() => {}} className="sm:mr-auto">
+        <Button variant="outline" type="button" onClick={onCancel} disabled={isDeleting} className="sm:mr-auto">
           Cancelar
         </Button>
-        <Button variant="destructive" onClick={onConfirm} className="gap-2 bg-red-600 hover:bg-red-700">
+        <Button variant="destructive" onClick={onConfirm} disabled={isDeleting} className="gap-2 bg-red-600 hover:bg-red-700">
           <Trash2 className="h-4 w-4" />
-          Eliminar permanentemente
+          {isDeleting ? "Eliminando..." : "Eliminar permanentemente"}
         </Button>
       </DialogFooter>
     </DialogContent>

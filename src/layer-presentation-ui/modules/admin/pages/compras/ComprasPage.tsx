@@ -23,6 +23,7 @@ import { DateFilter, matchesDateFilter, type DateFilterKey } from "../../compone
 import { useDollarRate } from "@/layer-presentation-ui/hooks/useDollarRate";
 import { usePurchaseActions } from "./hooks/usePurchaseActions";
 import { PaginationControls } from "../../components/PaginationControls";
+import { toast } from "sonner";
 
 
 // ---------- Types ----------
@@ -63,7 +64,10 @@ function ComprasPage() {
     isLoading, 
     createPurchase, 
     updatePurchase, 
-    deletePurchase 
+    deletePurchase,
+    isCreating,
+    isUpdating,
+    isDeleting,
   } = usePurchaseActions();
 
 
@@ -113,23 +117,38 @@ function ComprasPage() {
   const handleCreate = async (p: Purchase) => {
     // Quitamos el id temporal, Firestore genera el suyo nativamente
     const { id, ...purchaseData } = p; 
-    await createPurchase(purchaseData);
-    setCreateOpen(false);
+    try {
+      await createPurchase(purchaseData);
+      setCreateOpen(false);
+      toast.success("Compra registrada correctamente.");
+    } catch (err: any) {
+      toast.error(err.message || "Error al registrar la compra.");
+    }
   };
 
   const handleUpdate = async (updated: Purchase) => {
     if (!updated.id) return;
     const { id, ...fieldsToUpdate } = updated;
-    await updatePurchase(id, fieldsToUpdate);
-    setEditOpen(false);
-    setSelectedPurchase(null);
+    try {
+      await updatePurchase(id, fieldsToUpdate);
+      setEditOpen(false);
+      setSelectedPurchase(null);
+      toast.success("Compra actualizada correctamente.");
+    } catch (err: any) {
+      toast.error(err.message || "No se pudo actualizar la compra.");
+    }
   };
 
   const handleDeleteConfirm = async () => {
     if (!selectedPurchase || !selectedPurchase.id) return;
-    await deletePurchase(selectedPurchase.id);
-    setDeleteOpen(false);
-    setSelectedPurchase(null);
+    try {
+      await deletePurchase(selectedPurchase.id);
+      setDeleteOpen(false);
+      setSelectedPurchase(null);
+      toast.success("Compra eliminada correctamente.");
+    } catch (err: any) {
+      toast.error(err.message || "No se pudo eliminar la compra.");
+    }
   };
 
   if (isLoading) {
@@ -168,7 +187,7 @@ function ComprasPage() {
                   Nueva compra
                 </Button>
               </DialogTrigger>
-              <CreateComprasModal onCreate={handleCreate} currentRate={ rate } />
+              <CreateComprasModal onCreate={handleCreate} currentRate={ rate } isSubmitting={isCreating} />
             </Dialog>
           </SearchFilters>
         </SearchBar>
@@ -218,13 +237,18 @@ function ComprasPage() {
         {/* 🟢 MODAL DE EDICIÓN FLOTANTE */}
         <Dialog open={editOpen} onOpenChange={setEditOpen}>
           {selectedPurchase && (
-            <EditComprasModal purchase={selectedPurchase} onUpdate={handleUpdate} />
+            <EditComprasModal purchase={selectedPurchase} onUpdate={handleUpdate} isSubmitting={isUpdating} />
           )}
         </Dialog>
 
         {/* 🟢 MODAL DE CONFIRMACIÓN DE ELIMINACIÓN */}
         <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-          <DeleteCompraDialog purchase={selectedPurchase} onConfirm={handleDeleteConfirm} />
+          <DeleteCompraDialog
+            purchase={selectedPurchase}
+            onConfirm={handleDeleteConfirm}
+            onCancel={() => setDeleteOpen(false)}
+            isDeleting={isDeleting}
+          />
         </Dialog>
       </main>
     </div>

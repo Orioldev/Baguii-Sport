@@ -18,10 +18,12 @@ const toDateInputValue = (d: Date) => {
 
 export const EditComprasModal = ({ 
   purchase, 
-  onUpdate 
+  onUpdate,
+  isSubmitting = false,
 }: { 
   purchase: Purchase; 
   onUpdate: (p: Purchase) => void; 
+  isSubmitting?: boolean;
 }) => {
   const [name, setName] = useState(purchase.name);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(purchase.paymentMethod);
@@ -98,9 +100,9 @@ export const EditComprasModal = ({
       </div>
 
       <DialogFooter>
-        <Button onClick={handleSubmit} disabled={!isValid} className="w-full sm:w-auto gap-2">
+        <Button onClick={handleSubmit} disabled={!isValid || isSubmitting} className="w-full sm:w-auto gap-2">
           <Save className="h-4 w-4" />
-          Guardar cambios
+          {isSubmitting ? "Guardando..." : "Guardar cambios"}
         </Button>
       </DialogFooter>
     </DialogContent>
