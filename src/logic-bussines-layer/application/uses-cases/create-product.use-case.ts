@@ -1,4 +1,4 @@
-import type { ProductRepository } from '../../domain/repositories/product.repository';
+import type { IProductRepository } from '../../domain/repositories/product.repository';
 import type { Product } from '@/logic-bussines-layer/domain/models/product.model';
 import { z } from 'zod';
 
@@ -18,9 +18,9 @@ export const CreateProductSchema = z.object({
 type CreateProductInput = z.infer<typeof CreateProductSchema>;
 
 export class CreateProductUseCase {
-  private productRepository: ProductRepository;
+  private productRepository: IProductRepository;
 
-  constructor(productRepository: ProductRepository) {
+  constructor(productRepository: IProductRepository) {
     this.productRepository = productRepository;
   }
 
