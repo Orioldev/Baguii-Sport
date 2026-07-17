@@ -1,5 +1,6 @@
 import { RouterProvider } from "react-router";
 import { appRouter } from "./app.router";
+import { Toaster } from 'sonner';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useAuthInitializer } from "./layer-presentation-ui/modules/auth/hooks/useAuthInitializer";
@@ -14,7 +15,7 @@ export const BaguiSportApp = () => {
   return (
     <QueryClientProvider client={ queryClient }>
       <RouterProvider router={ appRouter } />
-        
+        <Toaster position="bottom-center" richColors/>
       <ReactQueryDevtools initialIsOpen={ false } />
     </QueryClientProvider>
   )
