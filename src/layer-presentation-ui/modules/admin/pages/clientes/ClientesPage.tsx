@@ -29,6 +29,7 @@ import { SearchFilters } from "../../components/SearchFilters";
 import { DateFilter, matchesDateFilter, type DateFilterKey } from "../../components/DateFilter";
 import { useClientActions } from "./hooks/useClientActions"; // Hook con TanStack Query importado
 import { PaginationControls } from "../../components/PaginationControls"; // Paginación importada
+import { toast } from "sonner";
 
 // ---------- Types ----------
 export type Client = {
@@ -64,7 +65,16 @@ const ITEMS_PER_PAGE = 8;
 
 function ClientesPage() {
   // 🔄 Conexión con el estado asíncrono y en tiempo real de TanStack Query
-  const { clients, isLoading, createClient, updateClient, deleteClient } = useClientActions();
+  const { 
+    clients, 
+    isLoading, 
+    createClient, 
+    updateClient, 
+    deleteClient,
+    isCreating,
+    isUpdating,
+    isDeleting,
+  } = useClientActions();
 
   const [query, setQuery] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -110,28 +120,43 @@ function ClientesPage() {
   // 🟢 Operaciones asíncronas mutando la persistencia real
   const handleCreate = async (newClient: Client) => {
     const { id, ...clientData } = newClient; // Omitimos el ID temporal del modal, Firestore genera el suyo nativo
-    await createClient(clientData);
-    setCreateOpen(false);
-    setCurrentPage(1); // Volver al inicio para ver al nuevo cliente
+    try {
+      await createClient(clientData);
+      setCreateOpen(false);
+      setCurrentPage(1); // Volver al inicio para ver al nuevo cliente
+      toast.success("Cliente creado correctamente.");
+    } catch (err: any) {
+      toast.error(err.message || "Error al crear el cliente.");
+    }
   };
 
   const handleUpdate = async (updatedClient: Client) => {
     if (!updatedClient.id) return;
     const { id, ...fieldsToUpdate } = updatedClient;
-    await updateClient(id, fieldsToUpdate);
-    setEditOpen(false);
-    setSelectedClient(null);
+    try {
+      await updateClient(id, fieldsToUpdate);
+      setEditOpen(false);
+      setSelectedClient(null);
+      toast.success("Cliente actualizado correctamente.");
+    } catch (err: any) {
+      toast.error(err.message || "No se pudieron guardar los cambios del cliente.");
+    }
   };
 
   const handleDeleteConfirm = async () => {
     if (!selectedClient || !selectedClient.id) return;
-    await deleteClient(selectedClient.id);
-    setDeleteOpen(false);
-    setSelectedClient(null);
-    
-    // Si borramos el último elemento de la página actual, retrocedemos una página
-    if (paginatedClients.length === 1 && currentPage > 1) {
-      setCurrentPage((prev) => prev - 1);
+    try {
+      await deleteClient(selectedClient.id);
+      setDeleteOpen(false);
+      setSelectedClient(null);
+      toast.success("Cliente eliminado correctamente.");
+
+      // Si borramos el último elemento de la página actual, retrocedemos una página
+      if (paginatedClients.length === 1 && currentPage > 1) {
+        setCurrentPage((prev) => prev - 1);
+      }
+    } catch (err: any) {
+      toast.error(err.message || "No se pudo eliminar el cliente.");
     }
   };
 
@@ -171,7 +196,7 @@ function ClientesPage() {
                   Nuevo cliente
                 </Button>
               </DialogTrigger>
-              <CreateClienteModal onCreate={handleCreate} />
+              <CreateClienteModal onCreate={handleCreate} isSubmitting={isCreating} />
             </Dialog>
           </SearchFilters>
         </SearchBar>
@@ -253,7 +278,7 @@ function ClientesPage() {
         {/* MODAL FLOTANTE DE EDICIÓN */}
         <Dialog open={editOpen} onOpenChange={setEditOpen}>
           {selectedClient && (
-            <EditClienteModal client={selectedClient} onUpdate={handleUpdate} />
+            <EditClienteModal client={selectedClient} onUpdate={handleUpdate} isSubmitting={isUpdating} />
           )}
         </Dialog>
 
@@ -266,6 +291,7 @@ function ClientesPage() {
               setDeleteOpen(false);
               setSelectedClient(null);
             }}
+            isDeleting={isDeleting}
           />
         </Dialog>
 

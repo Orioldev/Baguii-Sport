@@ -8,7 +8,13 @@ import { Plus } from "lucide-react";
 
 
 
-export const  CreateClienteModal = ({ onCreate }: { onCreate: (c: Client) => void }) => {
+export const  CreateClienteModal = ({ 
+  onCreate,
+  isSubmitting = false,
+}: { 
+  onCreate: (c: Client) => void;
+  isSubmitting?: boolean;
+}) => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [date, setDate] = useState<string>(toDateInputValue(new Date()));
@@ -90,11 +96,11 @@ export const  CreateClienteModal = ({ onCreate }: { onCreate: (c: Client) => voi
       <DialogFooter>
         <Button
           onClick={handleSubmit}
-          disabled={!isValid}
+          disabled={!isValid || isSubmitting}
           className="w-full sm:w-auto"
         >
           <Plus className="mr-2 h-4 w-4" />
-          Crear cliente
+          {isSubmitting ? "Creando..." : "Crear cliente"}
         </Button>
       </DialogFooter>
     </DialogContent>

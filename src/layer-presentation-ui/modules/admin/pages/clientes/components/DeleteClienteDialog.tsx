@@ -7,9 +7,10 @@ interface DeleteClienteDialogProps {
   client: Client | null;
   onConfirm: () => void;
   onCancel: () => void;
+  isDeleting?: boolean;
 }
 
-export const DeleteClienteDialog = ({ client, onConfirm, onCancel }: DeleteClienteDialogProps) => {
+export const DeleteClienteDialog = ({ client, onConfirm, onCancel, isDeleting = false }: DeleteClienteDialogProps) => {
   if (!client) return null;
 
   return (
@@ -30,6 +31,7 @@ export const DeleteClienteDialog = ({ client, onConfirm, onCancel }: DeleteClien
           variant="outline"
           type="button"
           onClick={onCancel}
+          disabled={isDeleting}
           className="w-full"
         >
           Cancelar
@@ -38,9 +40,10 @@ export const DeleteClienteDialog = ({ client, onConfirm, onCancel }: DeleteClien
           variant="destructive"
           type="button"
           onClick={onConfirm}
+          disabled={isDeleting}
           className="w-full bg-red-600 hover:bg-red-700 text-white"
         >
-          Sí, eliminar
+          {isDeleting ? "Eliminando..." : "Sí, eliminar"}
         </Button>
       </DialogFooter>
     </DialogContent>

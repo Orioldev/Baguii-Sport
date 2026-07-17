@@ -9,9 +9,10 @@ import { Save } from "lucide-react";
 interface EditClienteModalProps {
   client: Client;
   onUpdate: (updatedClient: Client) => void;
+  isSubmitting?: boolean;
 }
 
-export const EditClienteModal = ({ client, onUpdate }: EditClienteModalProps) => {
+export const EditClienteModal = ({ client, onUpdate, isSubmitting = false }: EditClienteModalProps) => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [date, setDate] = useState<string>("");
@@ -97,11 +98,11 @@ export const EditClienteModal = ({ client, onUpdate }: EditClienteModalProps) =>
       <DialogFooter>
         <Button
           onClick={handleSubmit}
-          disabled={!isValid}
+          disabled={!isValid || isSubmitting}
           className="w-full sm:w-auto"
         >
           <Save className="mr-2 h-4 w-4" />
-          Guardar cambios
+          {isSubmitting ? "Guardando..." : "Guardar cambios"}
         </Button>
       </DialogFooter>
     </DialogContent>

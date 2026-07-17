@@ -18,27 +18,27 @@ export const useClientActions = () => {
   const { data: clients = [], isLoading, error } = useQuery<Client[]>({
     queryKey: CLIENTS_QUERY_KEY,
     queryFn: () => {
-      // Retornamos una promesa que se resuelve la primera vez que Firebase trae la data
+      // Tomamos únicamente el primer snapshot para resolver la carga inicial
+      // y cerramos esa suscripción de inmediato; el useEffect de abajo es quien
+      // mantiene la suscripción en tiempo real durante todo el ciclo de vida del hook.
       return new Promise<Client[]>((resolve) => {
-        const unsubscribe = subscribeClientsUseCase((updatedClients) => {
-          // Cada vez que Firestore emite un cambio en vivo, actualizamos la caché de TanStack Query activamente
-          queryClient.setQueryData(CLIENTS_QUERY_KEY, updatedClients);
-          resolve(updatedClients as Client[]);
+        const unsubscribe = subscribeClientsUseCase((initialClients) => {
+          resolve(initialClients as Client[]);
+          unsubscribe();
         });
-        
-        // Retornamos la función de desuscripción para que se limpie si es necesario
-        return unsubscribe;
       });
     },
     staleTime: Infinity, // Mantiene la data fresca porque Firebase se encarga de actualizarla en vivo
   });
 
-  // Escuchar el desmontaje del componente para limpiar la conexión de Firestore si TanStack Query destruye la query
+  // Suscripción en tiempo real persistente (mismo patrón que useProductMutations/useSales):
+  // se crea al montar y se limpia correctamente al desmontar, evitando listeners acumulados.
   useEffect(() => {
-    return () => {
-      // Opcional: Si necesitas forzar una desuscripción manual al desmontar
-    };
-  }, []);
+    const unsubscribe = subscribeClientsUseCase((updatedClients) => {
+      queryClient.setQueryData(CLIENTS_QUERY_KEY, updatedClients);
+    });
+    return () => unsubscribe();
+  }, [queryClient]);
 
   // 2. MUTATION: Crear Cliente
   const createClientMutation = useMutation({
