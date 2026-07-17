@@ -15,6 +15,7 @@ import { SearchBar } from "../../components/SearchBar";
 import { SearchFilters } from "../../components/SearchFilters";
 import type { Product } from "@/logic-bussines-layer/domain/models/product.model";
 import { PaginationControls } from "../../components/PaginationControls";
+import { toast } from "sonner";
 
 
 
@@ -105,8 +106,9 @@ const ProductosPage = () => {
       });
       
       setCreateOpen(false);
+      toast.success("Calzado creado correctamente.");
     } catch (error) {
-      alert("Error al guardar el calzado en la base de datos.");
+      toast.error("Error al guardar el calzado en la base de datos.");
     }
   };
 
@@ -124,8 +126,9 @@ const ProductosPage = () => {
       });
       
       setEditOpen(false);
+      toast.success("Calzado actualizado correctamente.");
     } catch (error) {
-      alert("Error al actualizar la información.");
+      toast.error("Error al actualizar la información.");
     }
   };
 
@@ -135,8 +138,9 @@ const ProductosPage = () => {
     try {
       await deleteProduct(selectedProduct.id);
       setDeleteOpen(false);
+      toast.success("Calzado eliminado correctamente.");
     } catch (error) {
-      alert("Error al eliminar el producto.");
+      toast.error("Error al eliminar el producto.");
     }
   };
 

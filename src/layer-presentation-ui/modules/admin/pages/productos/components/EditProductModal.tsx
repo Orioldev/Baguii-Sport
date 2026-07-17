@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { Product, SizeRow } from "@/logic-bussines-layer/domain/models/product.model";
+import { toast } from "sonner";
 
 interface EditProductModalProps {
   product: Product;
@@ -41,7 +42,7 @@ export const EditProductModal = ({ product, onUpdate, isSubmitting = false }: Ed
     const file = e.target.files?.[0];
     if (!file) return;
     if (!["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(file.type)) {
-      alert("Solo se permiten imágenes JPG, JPEG, PNG o WEBP.");
+      toast.warning("Solo se permiten imágenes JPG, JPEG, PNG o WEBP.");
       return;
     }
     setSelectedFile(file);
@@ -73,13 +74,13 @@ export const EditProductModal = ({ product, onUpdate, isSubmitting = false }: Ed
 
   const handleSubmit = () => {
     if (!title.trim() || !description.trim()) {
-      alert("Por favor rellene los campos obligatorios.");
+      toast.warning("Por favor rellene los campos obligatorios.");
       return;
     }
 
     const filteredSizes = sizes.filter(s => s.size.trim() !== "");
     if (filteredSizes.length === 0) {
-      alert("Debe añadir al menos una combinación de talla.");
+      toast.warning("Debe añadir al menos una combinación de talla.");
       return;
     }
 

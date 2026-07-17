@@ -61,6 +61,7 @@ export const LoginPage: React.FC = () => {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl" />
       </div>
 
+
       <div className="w-full max-w-5xl relative z-10 flex flex-col lg:flex-row items-center justify-center gap-6 md:gap-8 lg:gap-16">
 
         {/* Panel del logo: arriba del formulario en móvil/tablet, al costado en escritorio */}
