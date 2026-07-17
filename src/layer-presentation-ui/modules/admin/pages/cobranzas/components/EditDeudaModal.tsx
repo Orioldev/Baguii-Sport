@@ -12,12 +12,13 @@ export const EditDeudaModal = ({
   onUpdate,
 }: {
   debt: Debt;
-  onUpdate: (d: Debt) => void;
+  onUpdate: (d: Debt) => void | Promise<void>;
 }) => {
   const [date, setDate] = useState<string>("");
   const [dueDate, setDueDate] = useState<string>("");
   const [total, setTotal] = useState<string>("");
   const [paid, setPaid] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Sincronizar el estado interno cuando cambie la deuda seleccionada
   useEffect(() => {
@@ -39,7 +40,7 @@ export const EditDeudaModal = ({
     paidNum >= 0 &&
     paidNum <= totalNum;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!isValid) return;
 
     // Si el abono aumentó con respecto al original, registramos la fecha del nuevo abono
@@ -54,7 +55,12 @@ export const EditDeudaModal = ({
       lastPaymentAt: seAbonoMas ? new Date() : debt.lastPaymentAt,
     };
 
-    onUpdate(updatedDebt);
+    try {
+      setIsSubmitting(true);
+      await onUpdate(updatedDebt);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -133,11 +139,11 @@ export const EditDeudaModal = ({
       <DialogFooter>
         <Button
           onClick={handleSubmit}
-          disabled={!isValid}
+          disabled={!isValid || isSubmitting}
           className="w-full sm:w-auto"
         >
           <Save className="mr-2 h-4 w-4" />
-          Guardar cambios
+          {isSubmitting ? "Guardando..." : "Guardar cambios"}
         </Button>
       </DialogFooter>
     </DialogContent>

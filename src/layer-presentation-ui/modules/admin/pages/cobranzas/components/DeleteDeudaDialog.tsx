@@ -7,10 +7,12 @@ export const DeleteDeudaDialog = ({
   debt,
   onConfirm,
   onCancel,
+  isDeleting = false,
 }: {
   debt: Debt | null;
   onConfirm: () => void;
   onCancel: () => void;
+  isDeleting?: boolean;
 }) => {
   if (!debt) return null;
 
@@ -43,11 +45,11 @@ export const DeleteDeudaDialog = ({
       )}
 
       <DialogFooter className="mt-4 gap-2 sm:gap-0">
-        <Button variant="outline" onClick={onCancel} className="w-full sm:w-auto">
+        <Button variant="outline" onClick={onCancel} disabled={isDeleting} className="w-full sm:w-auto">
           Cancelar
         </Button>
-        <Button variant="destructive" onClick={onConfirm} className="w-full sm:w-auto">
-          Eliminar definitivamente
+        <Button variant="destructive" onClick={onConfirm} disabled={isDeleting} className="w-full sm:w-auto">
+          {isDeleting ? "Eliminando..." : "Eliminar definitivamente"}
         </Button>
       </DialogFooter>
     </DialogContent>

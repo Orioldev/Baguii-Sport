@@ -22,6 +22,7 @@ import { useDeudaMutations } from "./hooks/useDeudasMutations";
 // Mismo hook que ya usa ClientesPage: TanStack Query + suscripción en tiempo real a Firestore.
 // No se reimplementa nada nuevo, solo se reutiliza la fuente de verdad ya existente de clientes.
 import { useClientActions } from "../clientes/hooks/useClientActions";
+import { toast } from "sonner";
 
 // 🟢 El modelo ya no se define aquí: vive en el dominio y solo se re-exporta,
 // así ningún import existente en DeudaCard/CreateDeudaModal/etc. se rompe.
@@ -53,7 +54,7 @@ const ITEMS_PER_PAGE = 9; // múltiplo de 3 para que cuadre con el grid xl:grid-
 
 function CobranzasPage() {
   // 🟢 Datos reales desde Firestore en tiempo real + mutaciones (create/update/delete/abonar)
-  const { debts, isLoading: isLoadingDeudas, createDeuda, updateDeuda, deleteDeuda, abonarDeuda } = useDeudaMutations();
+  const { debts, isLoading: isLoadingDeudas, createDeuda, updateDeuda, deleteDeuda, abonarDeuda, isDeleting } = useDeudaMutations();
 
   // 🟢 Clientes reales, ya persistidos por el módulo de Clientes (mismo hook, misma caché)
   const { clients, isLoading: isLoadingClients } = useClientActions();
@@ -100,8 +101,11 @@ function CobranzasPage() {
     try {
       await createDeuda(newDebt);
       closeModal();
-    } catch (err) {
+      toast.success("Deuda registrada correctamente.");
+    } catch (err: any) {
       console.error("Error al crear la deuda:", err);
+      toast.error(err.message || "No se pudo registrar la deuda.");
+      throw err; // el modal usa esto para no limpiar el formulario si falló
     }
   };
 
@@ -110,8 +114,10 @@ function CobranzasPage() {
       const { id, ...fields } = updatedDebt;
       await updateDeuda({ id, fields });
       closeModal();
-    } catch (err) {
+      toast.success("Deuda actualizada correctamente.");
+    } catch (err: any) {
       console.error("Error al actualizar la deuda:", err);
+      toast.error(err.message || "No se pudieron guardar los cambios de la deuda.");
     }
   };
 
@@ -119,8 +125,11 @@ function CobranzasPage() {
     try {
       await abonarDeuda({ debt, amount });
       closeModal();
-    } catch (err) {
+      toast.success("Abono registrado correctamente.");
+    } catch (err: any) {
       console.error("Error al registrar el abono:", err);
+      toast.error(err.message || "No se pudo registrar el abono.");
+      throw err; // el modal usa esto para no limpiar el campo de monto si falló
     }
   };
 
@@ -129,11 +138,13 @@ function CobranzasPage() {
     try {
       await deleteDeuda(modal.debt.id);
       closeModal();
+      toast.success("Deuda eliminada correctamente.");
       if (paginatedDebts.length === 1 && currentPage > 1) {
         setCurrentPage((prev) => prev - 1);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error al eliminar la deuda:", err);
+      toast.error(err.message || "No se pudo eliminar la deuda.");
     }
   };
 
@@ -225,6 +236,7 @@ function CobranzasPage() {
               debt={modal.debt}
               onConfirm={handleDeleteConfirm}
               onCancel={closeModal}
+              isDeleting={isDeleting}
             />
           )}
         </Dialog>
