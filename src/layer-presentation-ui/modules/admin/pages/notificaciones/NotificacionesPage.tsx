@@ -1,4 +1,4 @@
-import { Bell, CheckCheck } from "lucide-react";
+import { Bell, CheckCheck, AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { StockNotifCard } from "./components/StockNotiCard";
@@ -15,10 +15,30 @@ export type { Notification, StockNotification, DebtNotification } from "@/logic-
 
 export const NotificationsPage = () => {
   // 🟢 Ya no se lee un store estático: se derivan en vivo de Productos y Deudas reales
-  const { notifications, isLoading, removeNotification, clearNotificationsByType } = useNotifications();
+  const { notifications, isLoading, hasError, retry, removeNotification, clearNotificationsByType } = useNotifications();
 
   const stockNotifs = notifications.filter((n) => n.type === "stock");
   const debtNotifs = notifications.filter((n) => n.type === "debt");
+
+  if (hasError) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 px-4 text-center">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+          <AlertTriangle className="h-6 w-6" />
+        </div>
+        <div className="space-y-1">
+          <p className="font-medium text-foreground">No se pudieron cargar las notificaciones</p>
+          <p className="text-sm text-muted-foreground">
+            Revisa tu conexión e inténtalo de nuevo.
+          </p>
+        </div>
+        <Button onClick={retry} className="gap-2 mt-2">
+          <RefreshCw className="h-4 w-4" />
+          Reintentar
+        </Button>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

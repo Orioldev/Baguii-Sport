@@ -13,8 +13,8 @@ import type { Notification } from "@/logic-bussines-layer/domain/models/notifica
 export const useNotifications = () => {
   // Ambos ya son reactivos: productos vía onSnapshot (ver useGetProducts) y
   // deudas vía onSnapshot (ver useDeudaMutations) — cero polling manual aquí.
-  const { data: products = [], isLoading: isLoadingProducts } = useGetProducts();
-  const { debts, isLoading: isLoadingDebts } = useDeudaMutations();
+  const { data: products = [], isLoading: isLoadingProducts, error: productsError, refetch: refetchProducts } = useGetProducts();
+  const { debts, isLoading: isLoadingDebts, error: debtsError, retry: retryDebts } = useDeudaMutations();
 
   const dismissedIds = useNotificationDismissStore((s) => s.dismissedIds);
   const dismiss = useNotificationDismissStore((s) => s.dismiss);
@@ -43,9 +43,17 @@ export const useNotifications = () => {
     dismissMany(ids);
   };
 
+  // Reintenta la carga inicial de productos y deudas
+  const retry = () => {
+    refetchProducts();
+    retryDebts();
+  };
+
   return {
     notifications,
     isLoading: isLoadingProducts || isLoadingDebts,
+    hasError: Boolean(productsError || debtsError),
+    retry,
     removeNotification,
     clearNotificationsByType,
   };
