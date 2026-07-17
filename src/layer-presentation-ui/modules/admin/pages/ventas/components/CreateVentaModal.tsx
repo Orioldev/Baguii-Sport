@@ -14,15 +14,18 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import type { Sale, SaleItem } from "@/logic-bussines-layer/domain/models/sale.model";
 import type { PaymentMethod } from "../../compras/ComprasPage";
+import { toast } from "sonner";
 
 type SaleRow = { size: string; qty: string };
 
 export const CreateVentaModal = ({
   products,
   onCreate,
+  isSubmitting = false,
 }: {
   products: Product[];
   onCreate: (s: Sale) => void;
+  isSubmitting?: boolean;
 }) => {
   const toDateInputValue = (d: Date) => {
     const off = d.getTimezoneOffset();
@@ -69,13 +72,13 @@ export const CreateVentaModal = ({
   }, 0);
 
   const handleSubmit = () => {
-    if (!selectedProduct) return alert("Por favor seleccione un calzado");
+    if (!selectedProduct) return toast.warning("Por favor seleccione un calzado");
 
     const validItems: SaleItem[] = [];
     for (const row of rows) {
-      if (!row.size) return alert("Hay filas sin talla seleccionada");
+      if (!row.size) return toast.warning("Hay filas sin talla seleccionada");
       const q = parseInt(row.qty, 10);
-      if (isNaN(q) || q <= 0) return alert("La cantidad debe ser mayor a 0");
+      if (isNaN(q) || q <= 0) return toast.warning("La cantidad debe ser mayor a 0");
 
       validItems.push({
         size: row.size,
@@ -84,7 +87,7 @@ export const CreateVentaModal = ({
       });
     }
 
-    if (validItems.length === 0) return alert("Debe agregar al menos un ítem");
+    if (validItems.length === 0) return toast.warning("Debe agregar al menos un ítem");
 
     const newSale: Sale = {
       id: crypto.randomUUID(),
@@ -365,8 +368,8 @@ export const CreateVentaModal = ({
 
       {/* FOOTER FIJO — siempre visible */}
       <DialogFooter className="px-4 pb-4 sm:px-6 sm:pb-6 pt-2 shrink-0 border-t">
-        <Button onClick={handleSubmit} className="w-full sm:w-auto bg-blue-600 text-white hover:bg-blue-700">
-          Crear venta
+        <Button onClick={handleSubmit} disabled={isSubmitting} className="w-full sm:w-auto bg-blue-600 text-white hover:bg-blue-700">
+          {isSubmitting ? "Creando venta..." : "Crear venta"}
         </Button>
       </DialogFooter>
     </DialogContent>

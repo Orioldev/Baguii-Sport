@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import type { Sale, SaleItem } from "@/logic-bussines-layer/domain/models/sale.model";
 import type { PaymentMethod } from "../../compras/ComprasPage";
+import { toast } from "sonner";
 
 type SaleRow = { size: string; qty: string };
 
@@ -21,10 +22,12 @@ export const EditVentaModal = ({
   products,
   sale,
   onUpdate,
+  isSubmitting = false,
 }: {
   products: Product[];
   sale: Sale;
   onUpdate: (s: Sale) => void;
+  isSubmitting?: boolean;
 }) => {
   const toDateInputValue = (d: Date) => {
     const off = d.getTimezoneOffset();
@@ -86,13 +89,13 @@ export const EditVentaModal = ({
   }, 0);
 
   const handleSubmit = () => {
-    if (!selectedProduct) return alert("Por favor seleccione un calzado");
+    if (!selectedProduct) return toast.warning("Por favor seleccione un calzado");
 
     const validItems: SaleItem[] = [];
     for (const row of rows) {
-      if (!row.size) return alert("Hay filas sin talla seleccionada");
+      if (!row.size) return toast.warning("Hay filas sin talla seleccionada");
       const q = parseInt(row.qty, 10);
-      if (isNaN(q) || q <= 0) return alert("La cantidad debe ser mayor a 0");
+      if (isNaN(q) || q <= 0) return toast.warning("La cantidad debe ser mayor a 0");
 
       validItems.push({
         size: row.size,
@@ -101,7 +104,7 @@ export const EditVentaModal = ({
       });
     }
 
-    if (validItems.length === 0) return alert("Debe agregar al menos un ítem");
+    if (validItems.length === 0) return toast.warning("Debe agregar al menos un ítem");
 
     const updatedSale: Sale = {
       id: sale.id,
@@ -384,9 +387,10 @@ export const EditVentaModal = ({
       <DialogFooter className="px-4 pb-4 sm:px-6 sm:pb-6 pt-2 shrink-0 border-t">
         <Button
           onClick={handleSubmit}
+          disabled={isSubmitting}
           className="w-full bg-blue-600 text-white hover:bg-blue-700 text-xs sm:text-sm h-9 sm:h-10"
         >
-          Actualizar venta
+          {isSubmitting ? "Actualizando..." : "Actualizar venta"}
         </Button>
       </DialogFooter>
     </DialogContent>

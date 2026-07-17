@@ -20,12 +20,13 @@ import { SearchFilters } from "../../components/SearchFilters";
 import { useSales } from "./hooks/useSales"; 
 import type { Sale } from "@/logic-bussines-layer/domain/models/sale.model";
 import { useGetProducts } from "../productos/hooks/useProductMutations";
+import { toast } from "sonner";
 
 function VentasPage() {
   const { rate } = useDollarRate();
   
   // 🟢 REEMPLAZO CLAVE: Adiós al useState(initialSales) local de mentira
-  const { sales, isLoading: isLoadingSales, createSale, deleteSale, updateSale } = useSales();
+  const { sales, isLoading: isLoadingSales, createSale, deleteSale, updateSale, isCreating, isUpdating, isDeleting } = useSales();
 
   // 2. Traer los productos reales en tiempo real o por caché de TanStack
   const { data: realProducts = [], isLoading: isLoadingProducts } = useQuery({
@@ -75,8 +76,9 @@ function VentasPage() {
       });
       
       setCreateOpen(false);
+      toast.success("Venta registrada correctamente.");
     } catch (err: any) {
-      alert(err.message || "Error al procesar la venta transaccional");
+      toast.error(err.message || "Error al procesar la venta transaccional");
     }
   };
 
@@ -98,11 +100,9 @@ function VentasPage() {
           const availableStock = sizeInCache ? sizeInCache.qty : 0;
 
           if (availableStock < diff) {
-            alert(
-              `⚠️ Stock Insuficiente para la Talla ${newItem.size}.\n` +
-              `Disponibles en vitrina: ${availableStock}.\n` +
-              `Estás solicitando registrar ${diff} par(es) adicional(es).`
-            );
+            toast.warning(`Stock insuficiente para la talla ${newItem.size}`, {
+              description: `Disponibles en vitrina: ${availableStock}. Estás solicitando registrar ${diff} par(es) adicional(es).`,
+            });
             return; 
           }
         }
@@ -120,8 +120,9 @@ function VentasPage() {
 
       setEditOpen(false);
       setSelectedSale(null);
+      toast.success("Venta actualizada correctamente.");
     } catch (err: any) {
-      alert(err.message || "No se pudieron guardar los cambios de la venta.");
+      toast.error(err.message || "No se pudieron guardar los cambios de la venta.");
     }
   };
 
@@ -134,8 +135,9 @@ function VentasPage() {
       await deleteSale(selectedSale.id);
       setDeleteOpen(false);
       setSelectedSale(null);
+      toast.success("Venta eliminada correctamente.");
     } catch (err: any) {
-      alert(err.message || "No se pudo eliminar la venta.");
+      toast.error(err.message || "No se pudo eliminar la venta.");
     }
   }
 
@@ -230,7 +232,7 @@ function VentasPage() {
       </main>
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <CreateVentaModal products={realProducts} onCreate={handleCreate} />
+        <CreateVentaModal products={realProducts} onCreate={handleCreate} isSubmitting={isCreating} />
       </Dialog>
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
@@ -239,6 +241,7 @@ function VentasPage() {
             products={realProducts}
             sale={selectedSale}
             onUpdate={handleUpdate}
+            isSubmitting={isUpdating}
           />
         )}
       </Dialog>
@@ -248,6 +251,7 @@ function VentasPage() {
           sale={selectedSale}
           onConfirm={handleDeleteConfirm}
           onCancel={() => setDeleteOpen(false)}
+          isDeleting={isDeleting}
         />
       </Dialog>
     </div>

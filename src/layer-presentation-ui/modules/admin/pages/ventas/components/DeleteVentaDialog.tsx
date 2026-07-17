@@ -7,18 +7,20 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Trash2 } from "lucide-react";
-import type { Sale } from "../VentasPage";
+import type { Sale } from "@/logic-bussines-layer/domain/models/sale.model";
 
 interface DeleteVentaDialogProps {
   sale: Sale | null;
   onConfirm: () => void;
   onCancel: () => void;
+  isDeleting?: boolean;
 }
 
 export const DeleteVentaDialog = ({
   sale,
   onConfirm,
   onCancel,
+  isDeleting = false,
 }: DeleteVentaDialogProps) => {
   if (!sale) return null;
 
@@ -67,6 +69,7 @@ export const DeleteVentaDialog = ({
           type="button"
           variant="outline"
           onClick={onCancel}
+          disabled={isDeleting}
           className="w-full sm:w-auto"
         >
           Cancelar
@@ -75,10 +78,11 @@ export const DeleteVentaDialog = ({
           type="button"
           variant="destructive"
           onClick={onConfirm}
+          disabled={isDeleting}
           className="w-full sm:w-auto gap-2 bg-red-600 hover:bg-red-700 text-white"
         >
           <Trash2 className="h-4 w-4" />
-          Confirmar Eliminación
+          {isDeleting ? "Eliminando..." : "Confirmar Eliminación"}
         </Button>
       </DialogFooter>
     </DialogContent>
