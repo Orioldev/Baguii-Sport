@@ -34,7 +34,7 @@ export const DeleteCompraDialog = ({
         <Button variant="outline" type="button" onClick={onCancel} disabled={isDeleting} className="sm:mr-auto">
           Cancelar
         </Button>
-        <Button variant="destructive" onClick={onConfirm} disabled={isDeleting} className="gap-2 bg-red-600 hover:bg-red-700">
+        <Button variant="destructive" onClick={onConfirm} disabled={isDeleting} className="gap-2 bg-red-600 text-white hover:bg-red-700">
           <Trash2 className="h-4 w-4" />
           {isDeleting ? "Eliminando..." : "Eliminar permanentemente"}
         </Button>

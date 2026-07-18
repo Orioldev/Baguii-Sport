@@ -170,7 +170,7 @@ export const LoginPage: React.FC = () => {
 
               {/* Footer de la Marca */}
               <div className="text-center text-xs text-muted-foreground pt-2">
-                <p>© {new Date().getFullYear()} Bagui Sports. Todos los derechos reservados.</p>
+                <p>© {new Date().getFullYear()} Baguii Sport. Todos los derechos reservados.</p>
               </div>
             </div>
           </Card>

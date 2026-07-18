@@ -98,7 +98,7 @@ export const AdminHeader: React.FC = () => {
               <PopoverTrigger
                 render={
                   <button className="inline-flex h-9 items-center gap-2 rounded-md border border-input bg-background px-3 text-xs hover:bg-accent hover:text-accent-foreground sm:text-sm">
-                    <span className="font-medium">
+                    <span key={ rate } className="font-medium">
                       1$ = {rate.toLocaleString("es-VE")} Bs
                     </span>
                     <Pencil className="h-3.5 w-3.5" />
