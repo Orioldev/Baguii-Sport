@@ -1,27 +1,12 @@
 import { db } from '../API/firebase.config';
 import { supabase } from '../API/supabase.config';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, getDoc, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot } from 'firebase/firestore';
 import type { IProductRepository } from '@/logic-bussines-layer/domain/repositories/product.repository';
 import type { Product } from '@/logic-bussines-layer/domain/models/product.model';
 
 export class ProductRepositoryImpl implements IProductRepository {
   private productsCollection = collection(db, 'products');
   private bucketName = 'bagui-products';
-
-  // Auxiliar para extraer el nombre del archivo
-  private getFileNameFromUrl(url: string): string | null {
-    if (!url || !url.includes(this.bucketName)) return null;
-    
-    // Divide la URL usando el identificador estándar de objetos públicos de Supabase
-    const keyword = `/object/public/${this.bucketName}/`;
-    if (url.includes(keyword)) {
-      return url.split(keyword)[1];
-    }
-    
-    // Respaldo por si la estructura cambia: extrae el último fragmento de la URL
-    const parts = url.split('/');
-    return parts[parts.length - 1];
-  }
 
   private async uploadImage(file: File): Promise<string> {
     // 1. Extraemos la extensión de forma segura
@@ -95,75 +80,25 @@ export class ProductRepositoryImpl implements IProductRepository {
     };
   }
 
-  // 2. UPDATE CORREGIDO (Apunta directo al grano con getDoc)
+  // 2. UPDATE (ya NO borra la imagen anterior de Supabase: las ventas históricas
+  // guardan su propia copia congelada de esa URL en `Sale.productImage`, así que
+  // borrar el archivo viejo rompería el historial de ventas que la referencian).
   async update(id: string, product: Partial<Product>, imageFile: File | null): Promise<void> {
     const docRef = doc(db, 'products', id);
     const updateData = { ...product };
 
     if (imageFile) {
-      try {
-        // Obtenemos de forma limpia el documento exacto desde Firestore
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists()) {
-          const oldImageUrl = docSnap.data().image;
-          const oldFileName = this.getFileNameFromUrl(oldImageUrl);
-          
-          // Si tiene una imagen previa válida en tu bucket, la borramos físicamente
-          if (oldFileName && !oldImageUrl.includes('placehold.co')) {
-            console.log(`Intentando borrar imagen antigua: ${oldFileName}`);
-            const { error: deleteError } = await supabase.storage
-              .from(this.bucketName)
-              .remove([oldFileName]);
-
-            if (deleteError) {
-              console.error("No se pudo borrar el archivo viejo de Supabase:", deleteError.message);
-            } else {
-              console.log("¡Imagen antigua eliminada con éxito de Supabase Storage!");
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Error al buscar el producto para actualizar la imagen:", err);
-      }
-
-      // Subimos la nueva imagen recién seleccionada
+      // Subimos la nueva imagen recién seleccionada; la anterior se deja intacta en Supabase.
       updateData.image = await this.uploadImage(imageFile);
     }
 
     await updateDoc(docRef, updateData);
   }
 
-  // 3. DELETE CORREGIDO (Borra de Supabase usando getDoc antes de destruir en Firestore)
+  // 3. DELETE (ya NO borra la imagen del producto en Supabase, por la misma razón
+  // que update(): ventas históricas pueden seguir apuntando a esa misma imagen).
   async delete(id: string): Promise<void> {
     const docRef = doc(db, 'products', id);
-
-    try {
-      // Traemos el documento específico antes de que sea borrado
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const imageUrl = docSnap.data().image;
-        const fileName = this.getFileNameFromUrl(imageUrl);
-
-        if (fileName && !imageUrl.includes('placehold.co')) {
-          console.log(`Intentando eliminar imagen por eliminación de producto: ${fileName}`);
-          const { error: deleteError } = await supabase.storage
-            .from(this.bucketName)
-            .remove([fileName]);
-
-          if (deleteError) {
-            console.error("Error eliminando archivo en Supabase al borrar producto:", deleteError.message);
-          } else {
-            console.log("¡Archivo de imagen eliminado de Supabase!");
-          }
-        }
-      }
-    } catch (err) {
-      console.error("Error al buscar el producto antes de su eliminación:", err);
-    }
-
-    // Finalmente, eliminamos el documento de Firestore
     await deleteDoc(docRef);
   }
 }

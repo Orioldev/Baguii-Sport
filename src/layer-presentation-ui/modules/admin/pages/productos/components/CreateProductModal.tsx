@@ -13,33 +13,37 @@ import { Plus, Trash2, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { compressImage } from "@/layer-presentation-ui/utils/compress-image";
 
 export const CreateProductModal = ({ 
   onCreate, 
   isSubmitting = false 
 }: { 
-  onCreate: (p: Product) => void; 
+  onCreate: (p: Product, imageFile: File | null) => void; 
   isSubmitting?: boolean; 
 }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [minStock, setMinStock] = useState("1");
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [sizes, setSizes] = useState<SizeRow[]>([
     { size: "", price: 0, qty: 0 },
   ]);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!["image/jpeg", "image/jpg", "image/png"].includes(file.type)) {
       toast.warning("Solo se permiten imágenes JPG, JPEG o PNG.");
       return;
     }
+    const compressed = await compressImage(file);
+    setSelectedFile(compressed);
     const reader = new FileReader();
     reader.onload = () => setImagePreview(reader.result as string);
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(compressed);
   };
 
   
@@ -68,6 +72,7 @@ export const CreateProductModal = ({
     setDescription("");
     setMinStock("1");
     setImagePreview("");
+    setSelectedFile(null);
     setSizes([{ size: "", price: 0, qty: 0 }]);
   };
 
@@ -96,7 +101,7 @@ export const CreateProductModal = ({
         price: s.price,
         qty: s.qty,
       })),
-    });
+    }, selectedFile);
     reset()
   };
 

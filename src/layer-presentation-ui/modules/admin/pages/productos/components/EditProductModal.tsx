@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import type { Product, SizeRow } from "@/logic-bussines-layer/domain/models/product.model";
 import { toast } from "sonner";
+import { compressImage } from "@/layer-presentation-ui/utils/compress-image";
 
 interface EditProductModalProps {
   product: Product;
@@ -38,19 +39,20 @@ export const EditProductModal = ({ product, onUpdate, isSubmitting = false }: Ed
     setSelectedFile(null);
   }, [product]);
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(file.type)) {
       toast.warning("Solo se permiten imágenes JPG, JPEG, PNG o WEBP.");
       return;
     }
-    setSelectedFile(file);
+    const compressed = await compressImage(file);
+    setSelectedFile(compressed);
     const reader = new FileReader();
     reader.onloadend = () => {
       setImagePreview(reader.result as string);
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(compressed);
   };
 
   const addSize = () => {

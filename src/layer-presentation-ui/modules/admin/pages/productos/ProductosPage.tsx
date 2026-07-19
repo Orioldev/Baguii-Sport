@@ -87,13 +87,8 @@ const ProductosPage = () => {
 
   // Handler de Creación Real (Alineado con la firma (p: Product) => void)
   // Handler de Creación Real ajustado para enviar el archivo binario
-  const handleCreateProduct = async (newProduct: Product) => {
+  const handleCreateProduct = async (newProduct: Product, imageFile: File | null) => {
     try {
-      // 1. Buscamos el elemento input file real del DOM para obtener el archivo binario puro
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-      const imageFile = fileInput?.files?.[0] || null;
-
-      // 2. Enviamos los datos estructurados al caso de uso a través de la mutación de TanStack Query
       await createProduct({ 
         input: {
           title: newProduct.title,
@@ -102,7 +97,7 @@ const ProductosPage = () => {
           minStock: newProduct.minStock,
           sizes: newProduct.sizes
         }, 
-        imageFile: imageFile // <--- ¡Aquí viaja el archivo real hacia Supabase Storage!
+        imageFile: imageFile // <--- Ahora viaja el archivo (ya comprimido) que pasó el modal
       });
       
       setCreateOpen(false);
@@ -113,12 +108,9 @@ const ProductosPage = () => {
   };
 
   // Handler de Edición Real
-  const handleUpdateProduct = async (updatedFields: Partial<Product>) => {
+  const handleUpdateProduct = async (updatedFields: Partial<Product>, imageFile: File | null) => {
     if (!selectedProduct) return;
     try {
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-      const imageFile = fileInput?.files?.[0] || null;
-
       await updateProduct({ 
         id: selectedProduct.id, 
         updatedFields, 
