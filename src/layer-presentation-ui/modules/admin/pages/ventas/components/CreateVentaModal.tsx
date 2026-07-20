@@ -93,7 +93,6 @@ export const CreateVentaModal = ({
       id: crypto.randomUUID(),
       productId: selectedProduct.id,
       productTitle: selectedProduct.title,
-      productImage: selectedProduct.image || "",
       paymentMethod,
       date: new Date(dateStr + "T12:00:00"),
       items: validItems,
@@ -352,6 +351,7 @@ export const CreateVentaModal = ({
             rows={2}
             placeholder="Notas u observaciones de la venta..."
           />
+
         </div>
 
         {/* Total */}

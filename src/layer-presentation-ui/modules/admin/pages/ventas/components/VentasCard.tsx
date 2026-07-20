@@ -27,18 +27,8 @@ export const VentasCard = ({
     <Card className="overflow-hidden transition-shadow hover:shadow-md flex flex-col h-full">
       <CardContent className="flex flex-col gap-3 p-4 h-full">
         <div className="flex items-start gap-3">
-          <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md border bg-muted/30">
-            {sale.productImage ? (
-              <img
-                src={sale.productImage}
-                alt={sale.productTitle}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-muted text-muted-foreground">
-                <CreditCard className="h-6 w-6" />
-              </div>
-            )}
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-md border bg-muted/30 text-muted-foreground">
+            <CreditCard className="h-6 w-6" />
           </div>
           <div className="flex-1 min-w-0">
             <h4 className="truncate text-sm font-semibold text-foreground">

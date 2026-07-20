@@ -235,7 +235,7 @@ export const CreateProductModal = ({
 
       <DialogFooter>
         <Button onClick={handleSubmit} disabled={ isSubmitting } className="w-full sm:w-auto">
-          Crear producto
+          {isSubmitting ? "Creando producto..." : "Crear producto"}
         </Button>
       </DialogFooter>
     </DialogContent>

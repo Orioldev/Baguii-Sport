@@ -1,12 +1,25 @@
 import { db } from '../API/firebase.config';
 import { supabase } from '../API/supabase.config';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, getDoc, orderBy, onSnapshot } from 'firebase/firestore';
 import type { IProductRepository } from '@/logic-bussines-layer/domain/repositories/product.repository';
 import type { Product } from '@/logic-bussines-layer/domain/models/product.model';
 
 export class ProductRepositoryImpl implements IProductRepository {
   private productsCollection = collection(db, 'products');
   private bucketName = 'bagui-products';
+
+  // Auxiliar para extraer el nombre del archivo desde su URL pública de Supabase
+  private getFileNameFromUrl(url: string): string | null {
+    if (!url || !url.includes(this.bucketName)) return null;
+
+    const keyword = `/object/public/${this.bucketName}/`;
+    if (url.includes(keyword)) {
+      return url.split(keyword)[1];
+    }
+
+    const parts = url.split('/');
+    return parts[parts.length - 1];
+  }
 
   private async uploadImage(file: File): Promise<string> {
     // 1. Extraemos la extensión de forma segura
@@ -80,25 +93,69 @@ export class ProductRepositoryImpl implements IProductRepository {
     };
   }
 
-  // 2. UPDATE (ya NO borra la imagen anterior de Supabase: las ventas históricas
-  // guardan su propia copia congelada de esa URL en `Sale.productImage`, así que
-  // borrar el archivo viejo rompería el historial de ventas que la referencian).
+  // 2. UPDATE — borra la imagen anterior de Supabase al reemplazarla. Ya es seguro:
+  // las ventas ya no guardan ninguna copia de esta URL (Sale.productImage se eliminó
+  // del modelo), así que ninguna venta histórica depende de que este archivo siga existiendo.
   async update(id: string, product: Partial<Product>, imageFile: File | null): Promise<void> {
     const docRef = doc(db, 'products', id);
     const updateData = { ...product };
 
     if (imageFile) {
-      // Subimos la nueva imagen recién seleccionada; la anterior se deja intacta en Supabase.
+      try {
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const oldImageUrl = docSnap.data().image;
+          const oldFileName = this.getFileNameFromUrl(oldImageUrl);
+
+          if (oldFileName && !oldImageUrl.includes('placehold.co')) {
+            const { error: deleteError } = await supabase.storage
+              .from(this.bucketName)
+              .remove([oldFileName]);
+
+            if (deleteError) {
+              console.error("No se pudo borrar el archivo viejo de Supabase:", deleteError.message);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error al buscar el producto para actualizar la imagen:", err);
+      }
+
+      // Subimos la nueva imagen recién seleccionada
       updateData.image = await this.uploadImage(imageFile);
     }
 
     await updateDoc(docRef, updateData);
   }
 
-  // 3. DELETE (ya NO borra la imagen del producto en Supabase, por la misma razón
-  // que update(): ventas históricas pueden seguir apuntando a esa misma imagen).
+  // 3. DELETE — borra también la imagen del producto en Supabase. Mismo motivo que update():
+  // ninguna venta depende ya de esta URL.
   async delete(id: string): Promise<void> {
     const docRef = doc(db, 'products', id);
+
+    try {
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const imageUrl = docSnap.data().image;
+        const fileName = this.getFileNameFromUrl(imageUrl);
+
+        if (fileName && !imageUrl.includes('placehold.co')) {
+          const { error: deleteError } = await supabase.storage
+            .from(this.bucketName)
+            .remove([fileName]);
+          
+
+          if (deleteError) {
+            console.error("Error eliminando archivo en Supabase al borrar producto:", deleteError.message);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error al buscar el producto antes de su eliminación:", err);
+    }
+
     await deleteDoc(docRef);
   }
 }

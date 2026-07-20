@@ -110,7 +110,6 @@ export const EditVentaModal = ({
       id: sale.id,
       productId: selectedProduct.id as string,
       productTitle: selectedProduct.title,
-      productImage: selectedProduct.image || "",
       paymentMethod,
       date: new Date(dateStr + "T12:00:00"),
       items: validItems,

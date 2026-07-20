@@ -15,7 +15,6 @@ export interface Sale {
   id?: string;
   productId: string;
   productTitle: string;
-  productImage: string;
   paymentMethod: PaymentMethod;
   date: Date;
   items: SaleItem[];

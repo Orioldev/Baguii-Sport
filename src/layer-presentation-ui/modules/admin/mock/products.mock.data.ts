@@ -68,8 +68,6 @@ export const initialSales: Sale[] = [
     id: "s1",
     productId: "1",
     productTitle: "Nike Air Zoom Pegasus",
-    productImage:
-      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80",
     paymentMethod: "efectivo",
     date: daysAgo(0),
     items: [
@@ -84,8 +82,6 @@ export const initialSales: Sale[] = [
     id: "s2",
     productId: "2",
     productTitle: "Adidas Ultraboost 22",
-    productImage:
-      "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=600&q=80",
     paymentMethod: "usdt",
     date: daysAgo(2),
     items: [{ size: "42", price: 125, qty: 1 }],
